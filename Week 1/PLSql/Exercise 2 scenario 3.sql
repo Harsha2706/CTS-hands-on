@@ -1,0 +1,39 @@
+CREATE OR REPLACE PROCEDURE TransferFunds(
+    p_from_account IN NUMBER,
+    p_to_account   IN NUMBER,
+    p_amount       IN NUMBER
+)
+IS
+    v_balance NUMBER;
+BEGIN
+    SELECT Balance
+    INTO v_balance
+    FROM Accounts
+    WHERE Account_ID = p_from_account;
+    IF v_balance >= p_amount THEN
+
+        UPDATE Accounts
+        SET Balance = Balance - p_amount
+        WHERE Account_ID = p_from_account;
+
+        UPDATE Accounts
+        SET Balance = Balance + p_amount
+        WHERE Account_ID = p_to_account;
+
+        COMMIT;
+
+        DBMS_OUTPUT.PUT_LINE('Transfer Successful');
+
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Insufficient Balance');
+    END IF;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Account Not Found');
+
+    WHEN OTHERS THEN
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+END;
+/
